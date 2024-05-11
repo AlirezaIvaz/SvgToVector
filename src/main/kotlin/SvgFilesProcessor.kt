@@ -10,8 +10,6 @@ import kotlin.io.path.pathString
 class SvgFilesProcessor(
     private val sourceSvgDirectory: String,
     private val destinationVectorDirectory: String = "",
-    private val extension: String = "xml",
-    private val extensionSuffix: String = "",
 ) {
     private val sourceSvgPath: Path by lazy {
         Paths.get(sourceSvgDirectory)
@@ -87,7 +85,7 @@ class SvgFilesProcessor(
     private fun convertToVector(source: Path, target: Path) {
         // convert only if it is .svg
         if (source.fileName.toString().endsWith(".svg")) {
-            val targetFile = getFileWithXMlExtension(target, extension, extensionSuffix)
+            val targetFile = getFileWithXMlExtension(target, OUTPUT_EXTENSION)
             val fous = FileOutputStream(targetFile)
             Svg2Vector.parseSvgToXml(source.toFile(), fous)
             println("Converted: ${source.fileName}")
@@ -96,7 +94,7 @@ class SvgFilesProcessor(
         }
     }
 
-    private fun getFileWithXMlExtension(target: Path, extension: String, extensionSuffix: String?): File {
+    private fun getFileWithXMlExtension(target: Path, extension: String): File {
         val svgFilePath = target.toFile().absolutePath
         val svgBaseFile = StringBuilder()
         val index = svgFilePath.lastIndexOf(".")
@@ -104,7 +102,6 @@ class SvgFilesProcessor(
             val subStr = svgFilePath.substring(0, index)
             svgBaseFile.append(subStr)
         }
-        svgBaseFile.append(extensionSuffix ?: "")
         svgBaseFile.append(".")
         svgBaseFile.append(extension)
         return File(svgBaseFile.toString())
@@ -112,5 +109,6 @@ class SvgFilesProcessor(
 
     companion object {
         const val OUTPUT_DIR = "output"
+        const val OUTPUT_EXTENSION = "xml"
     }
 }
