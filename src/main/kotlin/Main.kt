@@ -1,7 +1,11 @@
 fun main(args: Array<String>) {
-    println("Hello World!")
-
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+    println("Welcome to SvgToVector convertor CLI...")
+    println("----")
+    if (args.isEmpty()) {
+        println("Error: Source directory not specified!")
+    } else {
+        val sourceDirectory = args[0]
+        val processor = SvgFilesProcessor(sourceDirectory)
+        processor.process()
+    }
 }
