@@ -85,7 +85,7 @@ class SvgFilesProcessor(
     private fun convertToVector(source: Path, target: Path) {
         // convert only if it is .svg
         if (source.fileName.toString().endsWith(".svg")) {
-            val targetFile = getFileWithXMlExtension(target, OUTPUT_EXTENSION)
+            val targetFile = getFileWithXMlExtension(target)
             val fous = FileOutputStream(targetFile)
             Svg2Vector.parseSvgToXml(source.toFile(), fous)
             println("Converted: ${source.fileName}")
@@ -94,7 +94,7 @@ class SvgFilesProcessor(
         }
     }
 
-    private fun getFileWithXMlExtension(target: Path, extension: String): File {
+    private fun getFileWithXMlExtension(target: Path): File {
         val svgFilePath = target.toFile().absolutePath
         val svgBaseFile = StringBuilder()
         val index = svgFilePath.lastIndexOf(".")
@@ -103,7 +103,7 @@ class SvgFilesProcessor(
             svgBaseFile.append(subStr)
         }
         svgBaseFile.append(".")
-        svgBaseFile.append(extension)
+        svgBaseFile.append(OUTPUT_EXTENSION)
         return File(svgBaseFile.toString())
     }
 
