@@ -1,4 +1,5 @@
 import com.android.ide.common.vectordrawable.Svg2Vector
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -10,6 +11,7 @@ import kotlin.io.path.pathString
 class SvgFilesProcessor(
     private val sourceSvgDirectory: String,
     private val destinationVectorDirectory: String = "",
+    private val replaceContent: Map<String, String> = emptyMap()
 ) {
     private val sourceSvgPath: Path by lazy {
         Paths.get(sourceSvgDirectory)
@@ -85,13 +87,34 @@ class SvgFilesProcessor(
     private fun convertToVector(source: Path, target: Path) {
         // convert only if it is .svg
         if (source.fileName.toString().endsWith(".svg")) {
-            val targetFile = getFileWithXMlExtension(target)
-            val fous = FileOutputStream(targetFile)
-            Svg2Vector.parseSvgToXml(source.toFile(), fous)
-            println("Converted: ${source.fileName}")
+            try {
+                val vectorContent = convertSvgToVector(source.toFile())
+                val targetFile = getFileWithXMlExtension(target)
+                val fileOutputStream = FileOutputStream(targetFile)
+                fileOutputStream.write(vectorContent.toByteArray())
+                println("Converted: ${source.fileName}")
+            } catch (e: Exception) {
+                println("Exception: ${e.message}")
+            }
         } else {
             println("Skipping file as its not svg " + source.fileName.toString())
         }
+    }
+
+    private fun convertSvgToVector(source: File): String {
+        val outputStream = ByteArrayOutputStream()
+        Svg2Vector.parseSvgToXml(source, outputStream)
+        val result = outputStream.toString()
+        return replaceContents(result)
+    }
+
+    private fun replaceContents(svgContent: String): String {
+        // Replace color codes in SVG content
+        var modifiedSvgContent = svgContent
+        for ((oldContent, newContent) in replaceContent) {
+            modifiedSvgContent = modifiedSvgContent.replace(oldContent, newContent)
+        }
+        return modifiedSvgContent
     }
 
     private fun getFileWithXMlExtension(target: Path): File {
