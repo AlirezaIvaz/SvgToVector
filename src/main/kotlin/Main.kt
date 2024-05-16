@@ -1,5 +1,6 @@
 fun main() {
-    println("SVG to XML resource convertor CLI")
+    println("----")
+    println("SVG to Vector")
     println("----")
     val defaultSource: String = System.getProperty("user.dir")
     val defaultDestination = "$defaultSource/output"
