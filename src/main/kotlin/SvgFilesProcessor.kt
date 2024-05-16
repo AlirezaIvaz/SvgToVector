@@ -24,57 +24,38 @@ class SvgFilesProcessor(
     fun process() {
         try {
             val options: Set<FileVisitOption> = EnumSet.of(FileVisitOption.FOLLOW_LINKS)
+            var totalFilesCount = 0
+            var convertedFilesCount = 0
+            val ignoredFiles = mutableListOf<String>()
             //check first if source is a directory
             if (Files.isDirectory(sourceSvgPath)) {
-                Files.walkFileTree(sourceSvgPath, options, Int.MAX_VALUE, object : FileVisitor<Path> {
-                    @Throws(IOException::class)
-                    override fun postVisitDirectory(dir: Path?, exc: IOException?): FileVisitResult {
-                        if (exc != null) {
-                            println("IOException occurred: ${exc.message}")
+                val visitor = object : SimpleFileVisitor<Path>() {
+
+                    override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                        totalFilesCount++
+                        if (file.toString().endsWith(".svg")) {
+                            try {
+                                convertToVector(file, destinationVectorPath.resolve(sourceSvgPath.relativize(file)))
+                                convertedFilesCount++
+                            } catch (e: Exception) {
+                                ignoredFiles.add(file.fileName.toString())
+                                println("Exception: ${e.message}")
+                            }
+                        } else {
+                            ignoredFiles.add(file.fileName.toString())
                         }
                         return FileVisitResult.CONTINUE
                     }
-
-                    override fun preVisitDirectory(
-                        dir: Path,
-                        attrs: BasicFileAttributes
-                    ): FileVisitResult {
-                        // Skip folder which is processing svgs to xml
-                        if (dir == destinationVectorPath) {
-                            return FileVisitResult.SKIP_SUBTREE
-                        }
-                        val opt =
-                            arrayOf<CopyOption>(StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING)
-                        val newDirectory = destinationVectorPath.resolve(sourceSvgPath.relativize(dir))
-                        try {
-                            Files.copy(dir, newDirectory, *opt)
-                        } catch (ex: FileAlreadyExistsException) {
-                            println("FileAlreadyExistsException $ex")
-                        } catch (x: IOException) {
-                            return FileVisitResult.SKIP_SUBTREE
-                        }
-                        return FileVisitResult.CONTINUE
-                    }
-
-                    @Throws(IOException::class)
-                    override fun visitFile(
-                        file: Path,
-                        attrs: BasicFileAttributes
-                    ): FileVisitResult {
-                        convertToVector(file, destinationVectorPath.resolve(sourceSvgPath.relativize(file)))
-                        return FileVisitResult.CONTINUE
-                    }
-
-                    @Throws(IOException::class)
-                    override fun visitFileFailed(
-                        file: Path,
-                        exc: IOException
-                    ): FileVisitResult {
-                        return FileVisitResult.CONTINUE
-                    }
-                })
+                }
+                Files.walkFileTree(sourceSvgPath, options, Int.MAX_VALUE, visitor)
+                println("----")
+                println("Total files: $totalFilesCount")
+                println("Converted files: $convertedFilesCount")
+                println("Ignored files: ${ignoredFiles.size}")
+                println("----")
+                println("Operation completed:")
             } else {
-                println("source not a directory")
+                println("Source is not a directory")
             }
         } catch (e: IOException) {
             println("IOException " + e.message)
@@ -82,7 +63,7 @@ class SvgFilesProcessor(
     }
 
     @Throws(IOException::class)
-    private fun convertToVector(source: Path, target: Path) {
+    private fun convertToVector(source: Path, target: Path): Boolean {
         // convert only if it is .svg
         if (source.fileName.toString().endsWith(".svg")) {
             try {
@@ -91,12 +72,14 @@ class SvgFilesProcessor(
                 val fileOutputStream = FileOutputStream(targetFile)
                 fileOutputStream.write(vectorContent.toByteArray())
                 println("Converted: ${source.fileName}")
+                return true
             } catch (e: Exception) {
                 println("Exception: ${e.message}")
             }
         } else {
             println("Skipping file as its not svg " + source.fileName.toString())
         }
+        return false
     }
 
     private fun convertSvgToVector(source: File): String {
