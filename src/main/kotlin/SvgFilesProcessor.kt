@@ -6,7 +6,6 @@ import java.io.IOException
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
-import kotlin.io.path.pathString
 
 class SvgFilesProcessor(
     private val sourceSvgDirectory: String,
@@ -24,7 +23,6 @@ class SvgFilesProcessor(
 
     fun process() {
         try {
-            println("Destination path: ${destinationVectorPath.pathString}")
             val options: Set<FileVisitOption> = EnumSet.of(FileVisitOption.FOLLOW_LINKS)
             //check first if source is a directory
             if (Files.isDirectory(sourceSvgPath)) {
