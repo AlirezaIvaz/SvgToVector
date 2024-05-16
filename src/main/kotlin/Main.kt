@@ -1,4 +1,4 @@
-fun main(args: Array<String>) {
+fun main() {
     println("SVG to XML resource convertor CLI")
     println("----")
     val defaultSource: String = System.getProperty("user.dir")
