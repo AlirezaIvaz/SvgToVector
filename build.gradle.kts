@@ -16,8 +16,18 @@ dependencies {
     implementation("com.android.tools:common:26.3.1")
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+        attributes["Implementation-Title"] = "SvgToVector"
+        attributes["Implementation-Version"] = version
+        attributes["Implementation-Vendor"] = "Alireza Ivaz"
+    }
+    from({
+        configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+    })
+    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 kotlin {
