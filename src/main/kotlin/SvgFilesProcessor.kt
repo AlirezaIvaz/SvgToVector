@@ -53,7 +53,7 @@ class SvgFilesProcessor(
                 println("Converted files: $convertedFilesCount")
                 println("Ignored files: ${ignoredFiles.size}")
                 println("----")
-                println("Operation completed:")
+                println("Operation completed.")
             } else {
                 println("Source is not a directory")
             }
